@@ -17,12 +17,18 @@ app.get('/',(req,res)=>{
 });
 
 
-mongoose.connect(process.env.DATABASE,
-    {UseNewUrlParser: true},
-    ()=>console.log('database is now connected'));
-    
+mongoose.connect(
+    process.env.DATABASE,
+    options,
+    (err) =>{
+        if(err) console.log(err)
+        else console.log('mongodb is connected');
+    }
+    //{UseNewUrlParser: true},
+    //()=>console.log('database is now connected'));
+);  
 
 
 
 
-app.listen(4000,()=>console.log('app is listen on port'));
+app.listen(5000,()=>console.log('app is listen on port'));

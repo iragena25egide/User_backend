@@ -2,10 +2,23 @@ const express = require('express');
 const router = express.Router();
 const UserSignup = require('../models/account');
 const bcrypt = require('bcrypt');
-const {UserValidation, Loginvalidation} = require('../User_valid');
+//const {UserValidation} = require('../User_valid');
 const { func } = require('@hapi/joi');
+const { find } = require('../models/account');
 
 
+
+const joi = require('@hapi/joi');
+
+
+    const schema = joi.object({
+        name:joi.string().required().min(8).max(16),
+        email:joi.string().email().required(),
+        position:joi.string().required(),
+        password:joi.string().required().min(6).max(8)
+    
+    });
+   
 
 
 
@@ -17,33 +30,51 @@ const { func } = require('@hapi/joi');
 
 router.post('/signup', async (req,res)=>{
 
-    const error = UserValidation(req.body);
-   if(!error)  return res.status(400).send(error.details[0].message);
+    //validation
 
+    const {error} = schema.validate(req.body)
+    if(error) return res.status(400).send(error.details[0].message);
+
+    //for hasing password
+    
     const salt = await bcrypt.genSalt(10);
     const{name, email, position, password} = req.body;
+    
+
     const hash = await bcrypt.hash(password,salt);
-    const signupUser = await new UserSignup({
+
+
+
+
+
+    const signupUser =await new UserSignup({
         name,
         email,
         position,
-        password:hash
+       password:hash
     });
     try {
-        const Post = await signupUser.save();
+       const Post = await signupUser.save();
         res.json(Post);
-    } catch (error) {
-       return  res.json({message: error});
+    } catch (err) {
+     res.status(400).send(err.message);
     }
 });
 
 
-router.get('/', async(req,res)=>{
-
+router.get('/', async (req,res)=>{
+ try {
+    const posted = await  UserSignup.find();
+    res.send(posted)
+ } catch (error) {
+    res.send('no posted yet')
+ }
 });
 
 
 router.post('/login', async (req,res)=>{
+    const{error} = schema.validate(req.body);
+    if(error) return res.status(400).send(error.details[0].message);
 
     UserSignup.findOne({email: req.body.email}, function(Post,signupUser){
         if(signupUser === null){
@@ -61,6 +92,19 @@ router.post('/login', async (req,res)=>{
         }
     });
 
+});
+
+router.get('/get', async (req,res)=>{
+    try {
+        const posted = await UserSignup.find(); 
+    if(posted) return 
+    res.json(posted);
+    
+        
+    } catch (error) {
+        return res.json('no post ')
+    }
+    
 });
 
 

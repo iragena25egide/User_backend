@@ -6,13 +6,11 @@ const mongoose = require('mongoose');
 const Accschema = mongoose.Schema({
     name:{
         type:String,
-        required: true,
-        unique:true
+        required: true
     },
     email:{
         type: String,
-        required: true,
-        unique: true
+        required: true
     },
     position:{
         type: String,
